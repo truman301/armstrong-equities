@@ -1,65 +1,92 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
 
-export default function Home() {
+export const revalidate = 3600
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+)
+
+export default async function HomePage() {
+  const { data: sector } = await supabase
+    .from('sectors')
+    .select('name, slug, description')
+    .eq('slug', 'medical-technology')
+    .single()
+
+  const { data: companies } = await supabase
+    .from('companies')
+    .select('ticker, name')
+    .order('ticker')
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="mx-auto max-w-3xl px-6 py-16">
+      <section className="mb-20">
+        <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
+          From the editor
+        </p>
+        <div className="mt-6 space-y-5 text-[19px] leading-[1.65] text-ink">
+          <p>
+            Armstrong Equities is a one-analyst equity research operation focused on
+            narrow sector coverage done at institutional depth. The current focus is
+            medical technology &mdash; US-listed names across cardiovascular devices,
+            diabetes technology, and surgical robotics.
+          </p>
+          <p>
+            Each name is covered through the buy-side initiation framework: a variant
+            view against consensus, a dated catalyst, an invalidation criterion, and a
+            paired hedge where one fits. Theses are refreshed after every earnings
+            print, stress-tested each weekend, and killed without ceremony when the
+            evidence changes.
+          </p>
+          <p className="font-display italic text-ink-mute pt-2">
+            &mdash; Truman Armstrong
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      <section className="border-t border-divider pt-10">
+        <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
+          Currently covering
+        </p>
+        {sector && (
+          <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight">
+            <Link
+              href="/sectors"
+              className="hover:text-accent transition-colors"
+            >
+              {sector.name}
+            </Link>
+          </h2>
+        )}
+        {companies && companies.length > 0 && (
+          <p className="mt-5 font-mono text-sm text-ink">
+            {companies.map((c) => c.ticker).join('    ·    ')}
+          </p>
+        )}
+        {sector?.description && (
+          <p className="mt-5 text-[17px] leading-relaxed text-ink">
+            {sector.description}
+          </p>
+        )}
+        <Link
+          href="/sectors"
+          className="mt-8 inline-block text-sm text-accent underline decoration-from-font underline-offset-[6px] hover:no-underline"
+        >
+          See full coverage &rarr;
+        </Link>
+      </section>
+
+      <section className="mt-20 border-t border-divider pt-10">
+        <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
+          Latest
+        </p>
+        <p className="mt-5 text-[17px] text-ink-mute italic">
+          First initiations publish mid-May 2026. The archive opens when the work is
+          ready, not before.
+        </p>
+      </section>
     </div>
-  );
+  )
 }
