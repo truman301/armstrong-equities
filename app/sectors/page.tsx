@@ -1,15 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 
 export const revalidate = 3600
 
 export const metadata = {
   title: 'Sectors',
 }
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-)
 
 export default async function SectorsPage() {
   const { data: sectors } = await supabase
@@ -51,23 +47,28 @@ export default async function SectorsPage() {
               {names.length > 0 && (
                 <div className="mt-8">
                   <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
-                    Active coverage &middot; {names.length} {names.length === 1 ? 'name' : 'names'}
+                    Active coverage &middot; {names.length}{' '}
+                    {names.length === 1 ? 'name' : 'names'}
                   </p>
                   <ul className="mt-4 divide-y divide-divider border-y border-divider">
                     {names.map((c) => (
-                      <li
-                        key={c.id}
-                        className="flex items-baseline justify-between gap-4 py-4"
-                      >
-                        <span className="flex items-baseline gap-5">
-                          <span className="font-mono text-sm font-semibold w-14">
-                            {c.ticker}
+                      <li key={c.id}>
+                        <Link
+                          href={`/companies/${encodeURIComponent(c.ticker)}`}
+                          className="group flex items-baseline justify-between gap-4 py-4"
+                        >
+                          <span className="flex items-baseline gap-5">
+                            <span className="w-14 font-mono text-sm font-semibold text-ink group-hover:text-accent transition-colors">
+                              {c.ticker}
+                            </span>
+                            <span className="text-[16px] group-hover:text-accent transition-colors">
+                              {c.name}
+                            </span>
                           </span>
-                          <span className="text-[16px]">{c.name}</span>
-                        </span>
-                        <span className="text-[11px] uppercase tracking-[0.2em] text-ink-mute">
-                          {c.exchange}
-                        </span>
+                          <span className="text-[11px] uppercase tracking-[0.2em] text-ink-mute">
+                            {c.exchange}
+                          </span>
+                        </Link>
                       </li>
                     ))}
                   </ul>

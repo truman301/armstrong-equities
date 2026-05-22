@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Armstrong Equities — editorial serif theme.
+ * Armstrong Equities -- editorial serif theme.
  * Cream paper background, deep-ink navy text, deep red accent.
  * Deliberately avoids the default black/neutral Tailwind scaffold look.
  */
@@ -47,4 +47,85 @@ pre,
 ::selection {
   background-color: var(--color-accent);
   color: var(--color-paper);
+}
+
+/*
+ * Rendered markdown for a published research note (the .writeup wrapper).
+ * Styled to match the editorial theme rather than a generic prose plugin.
+ */
+.writeup {
+  font-size: 17px;
+  line-height: 1.7;
+}
+.writeup > * + * {
+  margin-top: 1.1em;
+}
+.writeup h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2em;
+}
+.writeup h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.6em;
+}
+.writeup strong {
+  font-weight: 600;
+}
+.writeup em {
+  font-style: italic;
+}
+.writeup a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.writeup ul,
+.writeup ol {
+  padding-left: 1.4em;
+}
+.writeup ul {
+  list-style: disc;
+}
+.writeup ol {
+  list-style: decimal;
+}
+.writeup li + li {
+  margin-top: 0.35em;
+}
+.writeup blockquote {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 1em;
+  font-style: italic;
+  color: var(--color-ink-mute);
+}
+.writeup table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.writeup th,
+.writeup td {
+  border: 1px solid var(--color-divider);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.writeup th {
+  background-color: var(--color-paper-dim);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.writeup code {
+  background-color: var(--color-paper-dim);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+}
+.writeup hr {
+  border: 0;
+  border-top: 1px solid var(--color-divider);
+  margin: 2em 0;
 }

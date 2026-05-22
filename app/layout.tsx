@@ -27,14 +27,14 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.armstrongequities.com'),
   title: {
     default: 'Armstrong Equities',
-    template: '%s — Armstrong Equities',
+    template: '%s · Armstrong Equities',
   },
   description:
-    'One-analyst equity research with pod-shop depth. Currently covering medical technology.',
+    'One-analyst equity research with pod-shop depth. Currently covering sports betting and iGaming.',
   openGraph: {
     title: 'Armstrong Equities',
     description:
-      'One-analyst equity research with pod-shop depth. Currently covering medical technology.',
+      'One-analyst equity research with pod-shop depth. Currently covering sports betting and iGaming.',
     type: 'website',
     url: 'https://www.armstrongequities.com',
   },
