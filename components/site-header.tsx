@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LogoutButton from './logout-button'
 
 const NAV_ITEMS = [
   { href: '/sectors', label: 'Sectors' },
@@ -25,7 +26,7 @@ export default function SiteHeader() {
       </div>
       <nav className="border-b border-divider bg-paper-dim">
         <div className="mx-auto max-w-5xl px-6">
-          <ul className="flex flex-wrap justify-center gap-x-12 gap-y-2 py-4 text-[13px] uppercase tracking-[0.25em] text-ink-mute">
+          <ul className="flex flex-wrap items-center justify-center gap-x-12 gap-y-2 py-4 text-[13px] uppercase tracking-[0.25em] text-ink-mute">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
                 <Link
@@ -36,6 +37,9 @@ export default function SiteHeader() {
                 </Link>
               </li>
             ))}
+            <li className="text-ink-soft">
+              <LogoutButton />
+            </li>
           </ul>
         </div>
       </nav>

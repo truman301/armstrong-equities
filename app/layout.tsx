@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Fraunces, Source_Serif_4, JetBrains_Mono } from 'next/font/google'
 import SiteHeader from '@/components/site-header'
 import SiteFooter from '@/components/site-footer'
+import { createServerSupabase } from '@/lib/supabase-server'
 import './globals.css'
 
 const fraunces = Fraunces({
@@ -40,16 +41,29 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // Hide the site header and footer on the login screen. Middleware redirects
+  // unauthed users to /login, so any other page reaching here has a session
+  // and gets the full chrome.
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const isAuthed = !!user
+
   return (
     <html
       lang="en"
       className={`${fraunces.variable} ${sourceSerif.variable} ${jetbrainsMono.variable}`}
     >
       <body className="min-h-screen flex flex-col">
-        <SiteHeader />
+        {isAuthed && <SiteHeader />}
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        {isAuthed && <SiteFooter />}
       </body>
     </html>
   )
