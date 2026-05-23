@@ -2,9 +2,9 @@
  * Role catalog for the New Hire flow on /agents.
  *
  * Each role has:
- *   pitch        — one-sentence summary shown on the role card.
- *   description  — the prompt-grade job description that would govern the
- *                  agent's behavior if you wired it into the firm.
+ *   pitch        one-sentence summary shown on the role card.
+ *   description  the prompt-grade job description that would govern the
+ *                agent's behavior if you wired it into the firm.
  *
  * Categories group the roles on the role grid.
  */

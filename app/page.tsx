@@ -89,7 +89,7 @@ export default async function HomePage() {
             evidence changes.
           </p>
           <p className="font-display italic text-ink-mute pt-2">
-            &mdash; Truman Armstrong
+            Truman Armstrong
           </p>
         </div>
       </section>

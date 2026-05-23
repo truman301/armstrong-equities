@@ -19,13 +19,13 @@ export type Row = {
 }
 
 function fmtPct(v: number | null): string {
-  if (v === null || !Number.isFinite(v)) return '—'
+  if (v === null || !Number.isFinite(v)) return '·'
   const sign = v >= 0 ? '+' : ''
   return `${sign}${v.toFixed(2)}%`
 }
 
 function fmtPrice(v: number | null): string {
-  if (v === null || !Number.isFinite(v)) return '—'
+  if (v === null || !Number.isFinite(v)) return '·'
   return `$${v.toFixed(2)}`
 }
 
@@ -190,7 +190,7 @@ export function ClosedPositionsTable({ rows }: { rows: Row[] }) {
               <td className="py-3 font-display tracking-tight">{r.ticker}</td>
               <td className="py-3 text-ink-mute">
                 {fmtDate(r.entry_date)} →{' '}
-                {r.exit_date ? fmtDate(r.exit_date) : '—'}
+                {r.exit_date ? fmtDate(r.exit_date) : '·'}
               </td>
               <td className="py-3 text-right">{fmtPrice(r.entry_price)}</td>
               <td className="py-3 text-right">{fmtPrice(r.mark_price)}</td>
@@ -205,7 +205,7 @@ export function ClosedPositionsTable({ rows }: { rows: Row[] }) {
                 {fmtPct(r.alpha_pct)}
               </td>
               <td className="py-3 text-right text-ink-mute">{r.days_held}</td>
-              <td className="py-3 text-ink-mute">{r.exit_reason ?? '—'}</td>
+              <td className="py-3 text-ink-mute">{r.exit_reason ?? '·'}</td>
               <td className="py-3 text-right">
                 <button
                   onClick={() => reopen(r.pick_id)}

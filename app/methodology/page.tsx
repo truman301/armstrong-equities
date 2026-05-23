@@ -29,8 +29,8 @@ export default function MethodologyPage() {
           unit-economic level. Industry and sub-sector context. A KPI stack with a
           specific variant view on the one or two metrics that actually drive the
           stock. Alt-data and channel verification. A bottoms-up three-statement model
-          with explicit KPI drivers. Multi-methodology valuation &mdash; multiples, DCF,
-          and sum-of-the-parts where applicable &mdash; cross-checked on a football
+          with explicit KPI drivers. Multi-methodology valuation (multiples, DCF,
+          and sum-of-the-parts where applicable), cross-checked on a football
           field. Dated catalysts. A written risk taxonomy with explicit invalidation
           criteria. A paired hedge when one isolates the variant view. And a written
           initiation structured to the institutional fourteen-page standard.
@@ -44,7 +44,7 @@ export default function MethodologyPage() {
           active coverage is refreshed. Saturday is a health-check over every live
           thesis: has any invalidation criterion triggered, have consensus revisions
           eroded the variant view, has the catalyst schedule shifted. Sunday is the
-          idea pipeline &mdash; new candidates for the watch list, new promotions to
+          idea pipeline: new candidates for the watch list, new promotions to
           active coverage, and a published schedule of the five names due up the
           following week.
         </p>

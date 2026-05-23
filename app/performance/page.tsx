@@ -15,7 +15,7 @@ export const metadata = {
 }
 
 function fmtPct(v: number | null): string {
-  if (v === null || !Number.isFinite(v)) return '—'
+  if (v === null || !Number.isFinite(v)) return '·'
   const sign = v >= 0 ? '+' : ''
   return `${sign}${v.toFixed(2)}%`
 }
@@ -212,7 +212,7 @@ export default async function PerformancePage() {
           label="Avg hold"
           value={
             port.avg_days_held === null
-              ? '—'
+              ? '·'
               : `${Math.round(port.avg_days_held)}d`
           }
           hint={
