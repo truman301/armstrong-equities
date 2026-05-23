@@ -2,10 +2,11 @@ import Link from 'next/link'
 import LogoutButton from './logout-button'
 
 const NAV_ITEMS = [
+  { href: '/review', label: 'Review' },
   { href: '/desk', label: 'Desk' },
-  { href: '/sectors', label: 'Sectors' },
-  { href: '/research', label: 'Research' },
   { href: '/performance', label: 'Performance' },
+  { href: '/research', label: 'Research' },
+  { href: '/sectors', label: 'Sectors' },
   { href: '/agents', label: 'Agents' },
   { href: '/methodology', label: 'Methodology' },
   { href: '/contact', label: 'Contact' },
