@@ -1,7 +1,18 @@
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { supabase } from '@/lib/supabase'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
+
+function fmtDate(iso: string): string {
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
 
 export default async function HomePage() {
   const { data: sector } = await supabase
@@ -24,8 +35,41 @@ export default async function HomePage() {
     .limit(1)
     .maybeSingle()
 
+  // Latest PM-written end-of-tick desk note.
+  const { data: latestDesk } = await supabase
+    .from('firm_ticks')
+    .select('tick_number, tick_date, summary')
+    .not('summary', 'is', null)
+    .order('tick_number', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
+      {latestDesk?.summary && (
+        <section className="mb-20 border-b border-divider pb-16">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6">
+            <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
+              From the desk · Tick {latestDesk.tick_number}
+            </p>
+            <p className="text-[11px] uppercase tracking-[0.25em] text-ink-soft">
+              {fmtDate(latestDesk.tick_date)}
+            </p>
+          </div>
+          <article className="writeup mt-6 text-[17px]">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {latestDesk.summary}
+            </ReactMarkdown>
+          </article>
+          <Link
+            href="/desk"
+            className="mt-8 inline-block text-[11px] uppercase tracking-[0.25em] text-ink-mute hover:text-accent"
+          >
+            Past desk notes →
+          </Link>
+        </section>
+      )}
+
       <section className="mb-20">
         <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
           From the editor
