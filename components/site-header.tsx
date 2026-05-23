@@ -4,6 +4,7 @@ import LogoutButton from './logout-button'
 const NAV_ITEMS = [
   { href: '/sectors', label: 'Sectors' },
   { href: '/research', label: 'Research' },
+  { href: '/performance', label: 'Performance' },
   { href: '/agents', label: 'Agents' },
   { href: '/methodology', label: 'Methodology' },
   { href: '/contact', label: 'Contact' },
