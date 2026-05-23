@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   '/api/auth/',
   '/api/research/ingest',
   '/api/firm/tick-report',
+  '/api/firm/scoreboard',
   '/api/cron/',
 ]
 
