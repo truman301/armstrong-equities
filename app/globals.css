@@ -129,3 +129,35 @@ pre,
   border-top: 1px solid var(--color-divider);
   margin: 2em 0;
 }
+
+/*
+ * /agents office-floor animations.
+ * Subtle: a gentle idle bob on every avatar, plus a soft pulse when the
+ * agent's status is "building" or "reviewing." Position drifting is handled
+ * in component state with CSS transitions, not here.
+ */
+@keyframes agent-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+.agent-bob {
+  animation: agent-bob 3.5s ease-in-out infinite;
+}
+
+@keyframes agent-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.82;
+  }
+}
+.agent-pulse {
+  animation: agent-pulse 2.2s ease-in-out infinite;
+}
