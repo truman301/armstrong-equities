@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-admin'
+import { sendEmail, renderDraftPingHtml } from '@/lib/email'
 
 // Agent publish endpoint. The firm's pipeline POSTs a PM-approved research
 // note here; it lands as a DRAFT (published_at = null) for Truman's review.
@@ -131,6 +132,21 @@ export async function POST(request: NextRequest): Promise<Response> {
     .single()
   if (writeupErr) {
     return Response.json({ error: writeupErr.message }, { status: 500 })
+  }
+
+  // Best-effort: ping Truman so a draft landing during the day doesn't wait
+  // for the morning digest. Failures here must not break the ingest, so we
+  // swallow errors and let the response go out.
+  try {
+    const pingHtml = renderDraftPingHtml({
+      id: writeup.id,
+      ticker,
+      title,
+      type,
+    })
+    await sendEmail(`New draft: ${ticker} · ${title}`, pingHtml)
+  } catch {
+    /* ignore */
   }
 
   return Response.json(
