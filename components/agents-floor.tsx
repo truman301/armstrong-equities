@@ -233,19 +233,17 @@ function NewHireFlow({ onClose }: { onClose: () => void }) {
     setHiring(true)
     setError(null)
     try {
-      const res = await fetch('/api/firm/hire', {
+      const res = await fetch('/api/firm/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           role_slug: selected.slug,
-          role_name: selected.name,
-          pitch: selected.pitch,
-          description: customDescription.trim() || selected.description,
+          description: customDescription.trim() || undefined,
         }),
       })
       if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text.slice(0, 240) || `HTTP ${res.status}`)
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || `HTTP ${res.status}`)
       }
       window.location.reload()
     } catch (e) {
@@ -271,9 +269,18 @@ function NewHireFlow({ onClose }: { onClose: () => void }) {
         </h2>
         <p className="mt-1 text-[15px] text-ink-mute">{selected.pitch}</p>
 
+        <p className="mt-6 border-l-2 border-accent pl-4 text-[13px] leading-relaxed text-ink-mute">
+          Activating this role commits{' '}
+          <code className="text-ink">.claude/agents/{selected.slug}.md</code> to
+          the firm repo on <code className="text-ink">main</code>. The agent is
+          real from that point. Non-pipeline roles run on their own cadence;
+          pipeline roles (another Analyst or Associate) still need a separate
+          orchestrator wiring before the daily tick will invoke them.
+        </p>
+
         <div className="mt-8 border-t border-divider pt-6">
           <p className="text-[11px] uppercase tracking-[0.3em] text-ink-mute">
-            Job description (you can edit before hiring)
+            Job description (edit here to customize the prompt before activation)
           </p>
           <textarea
             className="mt-4 h-96 w-full resize-y border border-divider bg-paper-dim/40 p-4 font-serif text-[14px] leading-relaxed text-ink"
@@ -298,7 +305,7 @@ function NewHireFlow({ onClose }: { onClose: () => void }) {
             disabled={hiring}
             className="rounded-full bg-accent px-6 py-3 font-display text-sm uppercase tracking-[0.2em] text-paper transition-colors hover:bg-ink disabled:opacity-50"
           >
-            {hiring ? 'Hiring...' : 'Add to firm'}
+            {hiring ? 'Activating...' : 'Add to firm'}
           </button>
         </div>
       </div>

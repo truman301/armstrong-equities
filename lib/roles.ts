@@ -23,6 +23,10 @@ export interface Role {
   description: string
 }
 
+export function getRoleBySlug(slug: string): Role | undefined {
+  return ROLES.find((r) => r.slug === slug)
+}
+
 export const ROLES: Role[] = [
   {
     slug: 'portfolio-manager',

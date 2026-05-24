@@ -16,7 +16,10 @@ const AGENT_POSITIONS: Record<string, { x: number; y: number }> = {
   'associate-software': { x: 68, y: 74 },
 }
 
-const PENDING_POSITIONS: { x: number; y: number }[] = [
+// Slots for additional desks as the firm grows. Both newly-activated hires
+// and any leftover pending rows from before activate-on-click shipped take
+// the next free slot in this list.
+const EXPANSION_POSITIONS: { x: number; y: number }[] = [
   { x: 50, y: 78 },
   { x: 88, y: 36 },
   { x: 12, y: 28 },
@@ -24,6 +27,11 @@ const PENDING_POSITIONS: { x: number; y: number }[] = [
   { x: 62, y: 26 },
   { x: 88, y: 64 },
   { x: 12, y: 62 },
+  { x: 50, y: 18 },
+  { x: 30, y: 90 },
+  { x: 70, y: 90 },
+  { x: 88, y: 88 },
+  { x: 12, y: 88 },
 ]
 
 const BASE_AGENTS: Array<{ slug: string; name: string; role: string; sourceRoleSlug: string }> = [
@@ -60,8 +68,8 @@ export default async function AgentsPage() {
 
   const { data: hires } = await supabase
     .from('proposed_hires')
-    .select('id, role_slug, role_name, pitch, description, created_at')
-    .eq('status', 'pending')
+    .select('id, role_slug, role_name, pitch, description, status, created_at')
+    .in('status', ['active', 'pending'])
     .order('created_at', { ascending: true })
 
   const baseAgents: AgentOnFloor[] = BASE_AGENTS.map((b) => {
@@ -85,20 +93,20 @@ export default async function AgentsPage() {
     }
   })
 
-  const pendingAgents: AgentOnFloor[] = (hires ?? []).map((h, i) => ({
-    slug: `pending-${h.id}`,
+  const hireAgents: AgentOnFloor[] = (hires ?? []).map((h, i) => ({
+    slug: `${h.status as string}-${h.id}`,
     name: h.role_name as string,
     role: h.role_name as string,
     description: h.description as string,
     avatarSrc: null,
     initials: initialsOf(h.role_name as string),
-    position: PENDING_POSITIONS[i % PENDING_POSITIONS.length],
+    position: EXPANSION_POSITIONS[i % EXPANSION_POSITIONS.length],
     status: 'idle',
     currentTicker: null,
-    pending: true,
+    pending: h.status !== 'active',
   }))
 
-  const agents: AgentOnFloor[] = [...baseAgents, ...pendingAgents]
+  const agents: AgentOnFloor[] = [...baseAgents, ...hireAgents]
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">

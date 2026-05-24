@@ -18,15 +18,13 @@ if (!OPENAI_KEY) {
   process.exit(1)
 }
 
-const PROMPT = `A wide isometric illustration of a small editorial-style equity research office, viewed from a slightly elevated three-quarter top-down angle. Warm cream walls and floor (#f4f1ea), deep ink-navy furniture (#1a1f2e), with burgundy red accents (#8b2b2d) and soft beige dividers (#d4cfc4).
+const PROMPT = `A wide editorial illustration of a futuristic equity-research workspace, viewed from a slightly elevated three-quarter angle. The space is warm and architectural, not cold sci-fi. Palette: cream and ivory (#f4f1ea) base, deep ink-navy structural elements (#1a1f2e), burgundy accents (#8b2b2d), soft beige dividers (#d4cfc4).
 
-The room contains five distinct desks: one central, slightly elevated desk that is clearly the most prominent (the PM's), two desks on the left side (a Gaming pod), and two desks on the right side (a Software pod). Each desk has a laptop, a small stack of papers, and a desk lamp.
+The room: high vaulted ceilings, a wall of tall arched floor-to-ceiling windows on the back wall letting in soft late-afternoon light, polished cream stone floor with subtle inlaid burgundy geometric patterns, dark walnut and brushed-brass workstations arranged in two clusters (two stations on the left, two on the right) with one central larger workstation slightly elevated. Each station has a translucent holographic display panel floating above it (no text, no legible writing, just abstract minimalist line graphics in a soft glow). Antique brass reading lamps mixed with modern translucent light panels. Subtle exposed cable conduits running along the ceiling beams. A low burgundy chesterfield bench against one side wall. A glass-walled break-out pod in one corner with two facing chairs. An abstract market-data ribbon set into the back wall above the windows (minimalist line charts only, no numbers, no text).
 
-The room also has: tall windows on the back wall letting in soft golden afternoon light; a corner with a printer and a small filing cabinet; a small coffee station with an espresso machine; a side meeting nook with two chairs around a low coffee table; an abstract market-data display on one wall showing minimalist line charts (no numbers, no text); and a framed printed document on another wall.
+Important: the room is COMPLETELY EMPTY of any occupants. No people, no robots, no humanoid figures, no silhouettes, no characters anywhere. Just the empty futuristic workspace and its fixtures.
 
-Important: the room is EMPTY of occupants. No people, figures, characters, or human silhouettes anywhere. Just the office and its fixtures.
-
-Clean architectural lines, NYT-magazine illustration tone, deliberate, calm, and serious. No text, letters, numbers, or legible writing anywhere in the image.`
+Tone: editorial, refined, intentional. Sci-fi but warm. Original design language (not Blade Runner, not Apple Store, not Star Wars, not generic cyberpunk). NYT-magazine illustration quality. No text, letters, numbers, logos, or legible writing anywhere in the image.`
 
 interface ImageResponse {
   data?: Array<{ b64_json?: string }>
