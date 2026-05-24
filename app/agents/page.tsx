@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { supabase } from '@/lib/supabase'
 import { ROLES } from '@/lib/roles'
 import AgentsFloor, { type AgentOnFloor } from '@/components/agents-floor'
@@ -41,6 +43,13 @@ const BASE_AGENTS: Array<{ slug: string; name: string; role: string; sourceRoleS
   { slug: 'analyst-software',   name: 'Software Analyst',  role: 'Equity Analyst (Software)', sourceRoleSlug: 'equity-analyst' },
   { slug: 'associate-software', name: 'Software Associate',role: 'Research Associate (Software)', sourceRoleSlug: 'research-associate' },
 ]
+
+function avatarPathFor(roleSlug: string): string | null {
+  // Server-side existence check so new hires get a portrait when one was
+  // generated for their role, and fall back to initials when one wasn't.
+  const file = join(process.cwd(), 'public', 'avatars', `${roleSlug}.png`)
+  return existsSync(file) ? `/avatars/${roleSlug}.png` : null
+}
 
 function initialsOf(name: string): string {
   return name
@@ -98,7 +107,7 @@ export default async function AgentsPage() {
     name: h.role_name as string,
     role: h.role_name as string,
     description: h.description as string,
-    avatarSrc: null,
+    avatarSrc: avatarPathFor(h.role_slug as string),
     initials: initialsOf(h.role_name as string),
     position: EXPANSION_POSITIONS[i % EXPANSION_POSITIONS.length],
     status: 'idle',

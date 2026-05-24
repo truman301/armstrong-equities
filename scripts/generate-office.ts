@@ -18,13 +18,17 @@ if (!OPENAI_KEY) {
   process.exit(1)
 }
 
-const PROMPT = `A wide editorial illustration of a futuristic equity-research workspace, viewed from a slightly elevated three-quarter angle. The space is warm and architectural, not cold sci-fi. Palette: cream and ivory (#f4f1ea) base, deep ink-navy structural elements (#1a1f2e), burgundy accents (#8b2b2d), soft beige dividers (#d4cfc4).
+const PROMPT = `A wide editorial illustration of the empty operations deck of a futuristic research vessel, viewed from a slightly elevated angle looking forward toward the viewport. Warm sci-fi (not cold or industrial); think Pullman dining car crossed with a starship bridge. Palette: cream and ivory base (#f4f1ea), deep ink-navy structural panels (#1a1f2e), burgundy accents (#8b2b2d), brushed brass fittings, soft warm uplighting.
 
-The room: high vaulted ceilings, a wall of tall arched floor-to-ceiling windows on the back wall letting in soft late-afternoon light, polished cream stone floor with subtle inlaid burgundy geometric patterns, dark walnut and brushed-brass workstations arranged in two clusters (two stations on the left, two on the right) with one central larger workstation slightly elevated. Each station has a translucent holographic display panel floating above it (no text, no legible writing, just abstract minimalist line graphics in a soft glow). Antique brass reading lamps mixed with modern translucent light panels. Subtle exposed cable conduits running along the ceiling beams. A low burgundy chesterfield bench against one side wall. A glass-walled break-out pod in one corner with two facing chairs. An abstract market-data ribbon set into the back wall above the windows (minimalist line charts only, no numbers, no text).
+Architecture: a domed deck with curved ribbed ceiling. The back wall is a single wide curved panoramic viewport showing a soft golden dawn-lit nebula and distant stars (subtle, atmospheric, painterly, not garish). Polished cream stone floor with inlaid burgundy geometric trim along the edges.
 
-Important: the room is COMPLETELY EMPTY of any occupants. No people, no robots, no humanoid figures, no silhouettes, no characters anywhere. Just the empty futuristic workspace and its fixtures.
+Layout: ONE central command workstation on a slightly elevated platform directly in front of the viewport, with a horseshoe console of translucent display panels and a high-backed ergonomic chair, soft burgundy ambient glow from its screens. TWO workstations on the LEFT side of the deck, arranged front-to-back, each with a curved holographic console, exposed brass cable conduits, a personal viewscreen, and a low ergonomic chair. TWO MORE workstations on the RIGHT side, mirroring the left.
 
-Tone: editorial, refined, intentional. Sci-fi but warm. Original design language (not Blade Runner, not Apple Store, not Star Wars, not generic cyberpunk). NYT-magazine illustration quality. No text, letters, numbers, logos, or legible writing anywhere in the image.`
+Perimeter: brass-trimmed wall consoles, a refreshment alcove with translucent crystal carafes, a small briefing pod with a circular table and three chairs in one corner, abstract flowing data ribbons set into the ceiling beams (minimalist line graphics only, no text, no numbers).
+
+Important: the deck is COMPLETELY EMPTY of any occupants. No people, no robots, no humanoid figures, no silhouettes, no characters of any kind. Only the empty workstations, fixtures, and architecture.
+
+Tone: editorial, refined, warm, intentional. Original design language; not Star Trek, not Star Wars, not Mass Effect, not Apple Store, not generic Hollywood spaceship. NYT-magazine illustration quality. No text, letters, numbers, logos, or legible writing anywhere in the image.`
 
 interface ImageResponse {
   data?: Array<{ b64_json?: string }>

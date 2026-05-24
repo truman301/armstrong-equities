@@ -72,6 +72,7 @@ export default function AgentsFloor({ agents }: Props) {
           const drift = drifts[agent.slug] ?? { dx: 0, dy: 0 }
           const active =
             agent.status === 'building' || agent.status === 'reviewing'
+          const hasFullBody = Boolean(agent.avatarSrc)
           return (
             <button
               key={agent.slug}
@@ -81,34 +82,46 @@ export default function AgentsFloor({ agents }: Props) {
                 left: `calc(${agent.position.x}% + ${drift.dx}%)`,
                 top: `calc(${agent.position.y}% + ${drift.dy}%)`,
                 transition: 'left 4s ease-in-out, top 4s ease-in-out',
-                transform: 'translate(-50%, -50%)',
+                // Full-body figures are anchored at the FEET so the position
+                // refers to where they stand on the deck. Circle fallbacks are
+                // center-anchored as before.
+                transform: hasFullBody
+                  ? 'translate(-50%, -100%)'
+                  : 'translate(-50%, -50%)',
               }}
               aria-label={`${agent.role}: ${agent.name}`}
             >
               <div className={`agent-bob ${active ? 'agent-pulse' : ''}`}>
-                <div
-                  className={`relative h-12 w-12 sm:h-16 sm:w-16 rounded-full overflow-hidden border-2 shadow-md transition-transform group-hover:scale-110 ${
-                    agent.pending
-                      ? 'border-ink-mute bg-paper-dim'
-                      : 'border-accent bg-paper'
-                  }`}
-                >
-                  {agent.avatarSrc ? (
+                {hasFullBody ? (
+                  <div className="relative h-32 sm:h-44 transition duration-200 group-hover:[filter:drop-shadow(0_0_14px_rgba(255,255,255,0.95))_brightness(1.08)]">
                     <Image
-                      src={agent.avatarSrc}
+                      src={agent.avatarSrc as string}
                       alt={agent.name}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
+                      width={220}
+                      height={340}
+                      className="h-full w-auto object-contain"
+                      priority
                     />
-                  ) : (
+                  </div>
+                ) : (
+                  <div
+                    className={`relative h-12 w-12 sm:h-16 sm:w-16 rounded-full overflow-hidden border-2 shadow-md transition-all duration-200 group-hover:scale-110 group-hover:[box-shadow:0_0_18px_rgba(255,255,255,0.9)] ${
+                      agent.pending
+                        ? 'border-ink-mute bg-paper-dim'
+                        : 'border-accent bg-paper'
+                    }`}
+                  >
                     <div className="flex h-full w-full items-center justify-center font-display text-sm font-semibold text-ink-mute">
                       {agent.initials}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-              <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded bg-ink/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-paper opacity-0 transition-opacity group-hover:opacity-100">
+              <div
+                className={`pointer-events-none absolute left-1/2 ${
+                  hasFullBody ? 'bottom-full mb-2' : 'top-full mt-2'
+                } -translate-x-1/2 whitespace-nowrap rounded bg-ink/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-paper opacity-0 transition-opacity group-hover:opacity-100`}
+              >
                 {agent.pending ? 'pending · ' : ''}
                 {agent.role}
               </div>
