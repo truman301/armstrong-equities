@@ -2,6 +2,8 @@
   "crons": [
     { "path": "/api/cron/update-prices", "schedule": "0 22 * * *" },
     { "path": "/api/cron/update-comps", "schedule": "30 22 * * *" },
-    { "path": "/api/cron/daily-digest", "schedule": "0 13 * * 1-5" }
+    { "path": "/api/cron/daily-digest", "schedule": "0 13 * * 1-5" },
+    { "path": "/api/cron/bd-daily", "schedule": "0 14 * * 1-5" },
+    { "path": "/api/cron/bd-weekly", "schedule": "0 21 * * 5" }
   ]
 }

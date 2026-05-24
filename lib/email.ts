@@ -362,3 +362,58 @@ export function renderDraftPingHtml(d: DraftPingArgs): string {
 
   return shell(`New draft: ${d.ticker}`, `${header}${body}${cta}`)
 }
+
+// ---------- BD daily + weekly ----------
+
+function formatHumanDate(iso: string): string {
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+function bdHeader(kicker: string, headline: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 36px;">
+      <tr>
+        <td style="border-bottom:1px solid ${C_DIVIDER};padding-bottom:20px;">
+          <p style="font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:${C_INK_SOFT};margin:0 0 12px;font-family:Georgia,serif;">
+            ${escape(kicker)}
+          </p>
+          <h1 style="font-family:Georgia,serif;font-size:26px;font-weight:600;margin:0;color:${C_INK};letter-spacing:-0.01em;line-height:1.2;">
+            ${escape(headline)}
+          </h1>
+        </td>
+      </tr>
+    </table>`
+}
+
+export function renderBdDailyHtml(args: {
+  noteDate: string // YYYY-MM-DD
+  body: string // markdown produced by BD
+}): string {
+  const header = bdHeader(
+    'Business Development · Daily',
+    formatHumanDate(args.noteDate),
+  )
+  const letter = renderLetter(args.body)
+  return shell(`BD · ${formatHumanDate(args.noteDate)}`, `${header}${letter}`)
+}
+
+export function renderBdWeeklyHtml(args: {
+  weekEndingDate: string // YYYY-MM-DD (Friday)
+  body: string // markdown produced by BD
+}): string {
+  const header = bdHeader(
+    'Business Development · Weekly wrap',
+    `Week ending ${formatHumanDate(args.weekEndingDate)}`,
+  )
+  const letter = renderLetter(args.body)
+  return shell(
+    `BD Weekly · ${formatHumanDate(args.weekEndingDate)}`,
+    `${header}${letter}`,
+  )
+}
