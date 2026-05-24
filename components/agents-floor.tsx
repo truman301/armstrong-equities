@@ -1,140 +1,104 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
+import { useMemo, useState } from 'react'
 import { ROLES, type Role, type RoleCategory } from '@/lib/roles'
 
-export interface AgentOnFloor {
+// The /agents page is a typographic board, not an illustration. Each agent
+// is a card with their role label, name, and live status. Click opens the
+// agent detail modal; click "+ New Hire" opens the role catalog.
+
+export interface AgentSeat {
   slug: string
   name: string
   role: string
   description: string
-  avatarSrc: string | null
-  initials: string
-  position: { x: number; y: number }
   status: 'idle' | 'building' | 'reviewing'
   currentTicker: string | null
   pending: boolean
 }
 
 interface Props {
-  agents: AgentOnFloor[]
+  pm: AgentSeat | null
+  gamingPod: { analyst: AgentSeat; associate: AgentSeat }
+  softwarePod: { analyst: AgentSeat; associate: AgentSeat }
+  hires: AgentSeat[]
 }
 
-export default function AgentsFloor({ agents }: Props) {
-  const [openAgent, setOpenAgent] = useState<AgentOnFloor | null>(null)
+export default function AgentsBoard({
+  pm,
+  gamingPod,
+  softwarePod,
+  hires,
+}: Props) {
+  const [openAgent, setOpenAgent] = useState<AgentSeat | null>(null)
   const [openNewHire, setOpenNewHire] = useState(false)
-  const [drifts, setDrifts] = useState<Record<string, { dx: number; dy: number }>>({})
-
-  // Subtle drift: every 8 seconds, pick a random agent and shift their position
-  // by a few percent for a few seconds, then snap back. The CSS transition on
-  // left/top makes the move look like a slow walk.
-  useEffect(() => {
-    if (agents.length === 0) return
-    const timeouts: ReturnType<typeof setTimeout>[] = []
-    const interval = setInterval(() => {
-      const target = agents[Math.floor(Math.random() * agents.length)]
-      if (!target) return
-      const dx = (Math.random() - 0.5) * 4
-      const dy = (Math.random() - 0.5) * 3
-      setDrifts((prev) => ({ ...prev, [target.slug]: { dx, dy } }))
-      const t = setTimeout(() => {
-        setDrifts((prev) => {
-          const next = { ...prev }
-          delete next[target.slug]
-          return next
-        })
-      }, 6000)
-      timeouts.push(t)
-    }, 8000)
-    return () => {
-      clearInterval(interval)
-      timeouts.forEach((t) => clearTimeout(t))
-    }
-  }, [agents])
 
   return (
     <div>
+      {/* PM: solo card at the top, set off from the pods. */}
+      {pm && (
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <AgentCard
+              agent={pm}
+              onClick={() => setOpenAgent(pm)}
+              variant="pm"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Soft connector line down to the pods. */}
       <div
-        className="relative w-full overflow-hidden border border-divider bg-paper-dim"
-        style={{ aspectRatio: '1536 / 1024' }}
-      >
-        <Image
-          src="/office-floor.png"
-          alt="Armstrong Equities office floor"
-          fill
-          priority
-          className="object-cover"
-          sizes="(max-width: 1024px) 100vw, 1024px"
+        aria-hidden
+        className="mx-auto my-8 h-10 w-px bg-divider"
+      />
+
+      {/* Two pods, side by side: Gaming on the left, Software on the right. */}
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+        <Pod
+          title="Gaming"
+          analyst={gamingPod.analyst}
+          associate={gamingPod.associate}
+          onSelect={setOpenAgent}
         />
+        <Pod
+          title="Software"
+          analyst={softwarePod.analyst}
+          associate={softwarePod.associate}
+          onSelect={setOpenAgent}
+        />
+      </div>
 
-        {agents.map((agent) => {
-          const drift = drifts[agent.slug] ?? { dx: 0, dy: 0 }
-          const active =
-            agent.status === 'building' || agent.status === 'reviewing'
-          const hasFullBody = Boolean(agent.avatarSrc)
-          return (
-            <button
-              key={agent.slug}
-              onClick={() => setOpenAgent(agent)}
-              className="group absolute"
-              style={{
-                left: `calc(${agent.position.x}% + ${drift.dx}%)`,
-                top: `calc(${agent.position.y}% + ${drift.dy}%)`,
-                transition: 'left 4s ease-in-out, top 4s ease-in-out',
-                // Full-body figures are anchored at the FEET so the position
-                // refers to where they stand on the deck. Circle fallbacks are
-                // center-anchored as before.
-                transform: hasFullBody
-                  ? 'translate(-50%, -100%)'
-                  : 'translate(-50%, -50%)',
-              }}
-              aria-label={`${agent.role}: ${agent.name}`}
-            >
-              <div className={`agent-bob ${active ? 'agent-pulse' : ''}`}>
-                {hasFullBody ? (
-                  <div className="relative h-32 sm:h-44 transition duration-200 group-hover:[filter:drop-shadow(0_0_14px_rgba(255,255,255,0.95))_brightness(1.08)]">
-                    <Image
-                      src={agent.avatarSrc as string}
-                      alt={agent.name}
-                      width={220}
-                      height={340}
-                      className="h-full w-auto object-contain"
-                      priority
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className={`relative h-12 w-12 sm:h-16 sm:w-16 rounded-full overflow-hidden border-2 shadow-md transition-all duration-200 group-hover:scale-110 group-hover:[box-shadow:0_0_18px_rgba(255,255,255,0.9)] ${
-                      agent.pending
-                        ? 'border-ink-mute bg-paper-dim'
-                        : 'border-accent bg-paper'
-                    }`}
-                  >
-                    <div className="flex h-full w-full items-center justify-center font-display text-sm font-semibold text-ink-mute">
-                      {agent.initials}
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div
-                className={`pointer-events-none absolute left-1/2 ${
-                  hasFullBody ? 'bottom-full mb-2' : 'top-full mt-2'
-                } -translate-x-1/2 whitespace-nowrap rounded bg-ink/90 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-paper opacity-0 transition-opacity group-hover:opacity-100`}
-              >
-                {agent.pending ? 'pending · ' : ''}
-                {agent.role}
-              </div>
-            </button>
-          )
-        })}
+      {/* Hires + the New Hire CTA. */}
+      <div className="mt-20 border-t border-divider pt-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6">
+          <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
+            Other seats {hires.length > 0 && `(${hires.length})`}
+          </p>
+          <button
+            onClick={() => setOpenNewHire(true)}
+            className="rounded-full bg-accent px-5 py-2 font-display text-[12px] uppercase tracking-[0.2em] text-paper transition-colors hover:bg-ink"
+          >
+            + New Hire
+          </button>
+        </div>
 
-        <button
-          onClick={() => setOpenNewHire(true)}
-          className="absolute bottom-4 right-4 rounded-full bg-accent px-5 py-3 font-display text-sm uppercase tracking-[0.2em] text-paper shadow-lg transition-colors hover:bg-ink"
-        >
-          + New Hire
-        </button>
+        {hires.length === 0 ? (
+          <p className="mt-6 text-[15px] italic text-ink-mute">
+            No hires beyond the five core seats yet. Use New Hire to add a role.
+          </p>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {hires.map((h) => (
+              <AgentCard
+                key={h.slug}
+                agent={h}
+                onClick={() => setOpenAgent(h)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {openAgent && (
@@ -142,13 +106,117 @@ export default function AgentsFloor({ agents }: Props) {
           <AgentDetail agent={openAgent} />
         </Modal>
       )}
-
       {openNewHire && (
         <Modal onClose={() => setOpenNewHire(false)} wide>
           <NewHireFlow onClose={() => setOpenNewHire(false)} />
         </Modal>
       )}
     </div>
+  )
+}
+
+function Pod({
+  title,
+  analyst,
+  associate,
+  onSelect,
+}: {
+  title: string
+  analyst: AgentSeat
+  associate: AgentSeat
+  onSelect: (a: AgentSeat) => void
+}) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-[0.4em] text-ink-soft">
+        {title} Pod
+      </p>
+      <div className="mt-4 space-y-4">
+        <AgentCard agent={analyst} onClick={() => onSelect(analyst)} />
+        <AgentCard agent={associate} onClick={() => onSelect(associate)} />
+      </div>
+    </div>
+  )
+}
+
+function AgentCard({
+  agent,
+  onClick,
+  variant,
+}: {
+  agent: AgentSeat
+  onClick: () => void
+  variant?: 'pm'
+}) {
+  const isPm = variant === 'pm'
+  return (
+    <button
+      onClick={onClick}
+      className="group block w-full border border-divider bg-paper-dim/30 p-6 text-left transition-colors hover:border-accent hover:bg-paper-dim"
+    >
+      <p
+        className={`text-[10px] uppercase tracking-[0.35em] ${
+          isPm ? 'text-accent' : 'text-ink-mute'
+        }`}
+      >
+        {agent.role}
+      </p>
+      <p
+        className={`mt-3 font-display font-semibold tracking-tight ${
+          isPm ? 'text-3xl' : 'text-xl'
+        } text-ink group-hover:text-accent transition-colors`}
+      >
+        {agent.name}
+      </p>
+      <StatusLine
+        status={agent.status}
+        ticker={agent.currentTicker}
+        pending={agent.pending}
+      />
+    </button>
+  )
+}
+
+function StatusLine({
+  status,
+  ticker,
+  pending,
+}: {
+  status: 'idle' | 'building' | 'reviewing'
+  ticker: string | null
+  pending: boolean
+}) {
+  if (pending) {
+    return (
+      <p className="mt-4 text-[13px] italic text-ink-mute">
+        Awaiting activation
+      </p>
+    )
+  }
+  const dotClass =
+    status === 'building'
+      ? 'bg-emerald-600 animate-pulse'
+      : status === 'reviewing'
+        ? 'bg-accent animate-pulse'
+        : 'bg-ink-soft'
+  const text =
+    status === 'building'
+      ? ticker
+        ? `Building thesis on ${ticker}`
+        : 'Building'
+      : status === 'reviewing'
+        ? ticker
+          ? `Reviewing ${ticker}`
+          : 'Reviewing'
+        : 'Idle this tick'
+  return (
+    <p className="mt-4 flex items-center gap-3 text-[13px] text-ink">
+      <span
+        aria-hidden
+        className={`inline-block h-2 w-2 rounded-full ${dotClass}`}
+      />
+      {text}
+    </p>
   )
 }
 
@@ -185,15 +253,14 @@ function Modal({
   )
 }
 
-function AgentDetail({ agent }: { agent: AgentOnFloor }) {
-  const status =
-    agent.pending
-      ? 'Awaiting activation. The deep job description below would govern this agent if you wire them in.'
-      : agent.status === 'building' && agent.currentTicker
-        ? `Building the thesis on ${agent.currentTicker}.`
-        : agent.status === 'reviewing' && agent.currentTicker
-          ? `Reviewing ${agent.currentTicker}.`
-          : 'Idle this tick.'
+function AgentDetail({ agent }: { agent: AgentSeat }) {
+  const status = agent.pending
+    ? 'Awaiting activation. The deep job description below would govern this agent if you wire them in.'
+    : agent.status === 'building' && agent.currentTicker
+      ? `Building the thesis on ${agent.currentTicker}.`
+      : agent.status === 'reviewing' && agent.currentTicker
+        ? `Reviewing ${agent.currentTicker}.`
+        : 'Idle this tick.'
 
   return (
     <div>
@@ -302,9 +369,7 @@ function NewHireFlow({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        {error && (
-          <p className="mt-4 text-[13px] text-accent">Error: {error}</p>
-        )}
+        {error && <p className="mt-4 text-[13px] text-accent">Error: {error}</p>}
 
         <div className="mt-8 flex items-center justify-end gap-4 border-t border-divider pt-6">
           <button
@@ -334,9 +399,8 @@ function NewHireFlow({ onClose }: { onClose: () => void }) {
         Add a seat to the firm
       </h2>
       <p className="mt-3 max-w-xl text-[15px] text-ink-mute">
-        Each role carries a deep job description that would govern the agent's
-        behavior if you later wire them into the firm. Click a role to read it
-        and hire.
+        Each role carries a deep job description that governs the agent's
+        behavior once activated. Click a role to read it and hire.
       </p>
 
       <div className="mt-8 space-y-10">

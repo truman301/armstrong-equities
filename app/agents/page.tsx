@@ -1,8 +1,6 @@
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
 import { supabase } from '@/lib/supabase'
 import { ROLES } from '@/lib/roles'
-import AgentsFloor, { type AgentOnFloor } from '@/components/agents-floor'
+import AgentsBoard, { type AgentSeat } from '@/components/agents-floor'
 
 export const revalidate = 60
 
@@ -10,55 +8,71 @@ export const metadata = {
   title: 'Agents',
 }
 
-const AGENT_POSITIONS: Record<string, { x: number; y: number }> = {
-  'portfolio-manager':  { x: 48, y: 46 },
-  'analyst-gaming':     { x: 22, y: 46 },
-  'associate-gaming':   { x: 22, y: 74 },
-  'analyst-software':   { x: 72, y: 46 },
-  'associate-software': { x: 68, y: 74 },
-}
-
-// Slots for additional desks as the firm grows. Both newly-activated hires
-// and any leftover pending rows from before activate-on-click shipped take
-// the next free slot in this list.
-const EXPANSION_POSITIONS: { x: number; y: number }[] = [
-  { x: 50, y: 78 },
-  { x: 88, y: 36 },
-  { x: 12, y: 28 },
-  { x: 38, y: 26 },
-  { x: 62, y: 26 },
-  { x: 88, y: 64 },
-  { x: 12, y: 62 },
-  { x: 50, y: 18 },
-  { x: 30, y: 90 },
-  { x: 70, y: 90 },
-  { x: 88, y: 88 },
-  { x: 12, y: 88 },
+const BASE_AGENTS: Array<{
+  slug: string
+  name: string
+  role: string
+  sourceRoleSlug: string
+}> = [
+  {
+    slug: 'portfolio-manager',
+    name: 'The desk',
+    role: 'Portfolio Manager · CIO',
+    sourceRoleSlug: 'portfolio-manager',
+  },
+  {
+    slug: 'analyst-gaming',
+    name: 'Gaming Analyst',
+    role: 'Equity Analyst',
+    sourceRoleSlug: 'equity-analyst',
+  },
+  {
+    slug: 'associate-gaming',
+    name: 'Gaming Associate',
+    role: 'Research Associate',
+    sourceRoleSlug: 'research-associate',
+  },
+  {
+    slug: 'analyst-software',
+    name: 'Software Analyst',
+    role: 'Equity Analyst',
+    sourceRoleSlug: 'equity-analyst',
+  },
+  {
+    slug: 'associate-software',
+    name: 'Software Associate',
+    role: 'Research Associate',
+    sourceRoleSlug: 'research-associate',
+  },
 ]
 
-const BASE_AGENTS: Array<{ slug: string; name: string; role: string; sourceRoleSlug: string }> = [
-  { slug: 'portfolio-manager',  name: 'Portfolio Manager', role: 'Portfolio Manager / CIO', sourceRoleSlug: 'portfolio-manager' },
-  { slug: 'analyst-gaming',     name: 'Gaming Analyst',    role: 'Equity Analyst (Gaming)', sourceRoleSlug: 'equity-analyst' },
-  { slug: 'associate-gaming',   name: 'Gaming Associate',  role: 'Research Associate (Gaming)', sourceRoleSlug: 'research-associate' },
-  { slug: 'analyst-software',   name: 'Software Analyst',  role: 'Equity Analyst (Software)', sourceRoleSlug: 'equity-analyst' },
-  { slug: 'associate-software', name: 'Software Associate',role: 'Research Associate (Software)', sourceRoleSlug: 'research-associate' },
-]
-
-function avatarPathFor(roleSlug: string): string | null {
-  // Server-side existence check so new hires get a portrait when one was
-  // generated for their role, and fall back to initials when one wasn't.
-  const file = join(process.cwd(), 'public', 'avatars', `${roleSlug}.png`)
-  return existsSync(file) ? `/avatars/${roleSlug}.png` : null
+type ActivityRow = {
+  status?: string
+  current_ticker?: string | null
+  verdict?: string | null
 }
 
-function initialsOf(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+function seatFor(
+  slug: string,
+  name: string,
+  role: string,
+  description: string,
+  perAgent: Record<string, ActivityRow>,
+): AgentSeat {
+  const activity = perAgent[slug] || {}
+  const status =
+    activity.status === 'building' || activity.status === 'reviewing'
+      ? activity.status
+      : 'idle'
+  return {
+    slug,
+    name,
+    role,
+    description,
+    status: status as 'idle' | 'building' | 'reviewing',
+    currentTicker: activity.current_ticker ?? null,
+    pending: false,
+  }
 }
 
 export default async function AgentsPage() {
@@ -70,10 +84,7 @@ export default async function AgentsPage() {
     .maybeSingle()
 
   const perAgent =
-    (latestTick?.per_agent as Record<
-      string,
-      { status?: string; current_ticker?: string | null; verdict?: string | null }
-    >) ?? {}
+    (latestTick?.per_agent as Record<string, ActivityRow>) ?? {}
 
   const { data: hires } = await supabase
     .from('proposed_hires')
@@ -81,70 +92,66 @@ export default async function AgentsPage() {
     .in('status', ['active', 'pending'])
     .order('created_at', { ascending: true })
 
-  const baseAgents: AgentOnFloor[] = BASE_AGENTS.map((b) => {
-    const activity = perAgent[b.slug] || {}
+  const lookup = new Map<string, AgentSeat>()
+  for (const b of BASE_AGENTS) {
     const role = ROLES.find((r) => r.slug === b.sourceRoleSlug)
-    const status =
-      activity.status === 'building' || activity.status === 'reviewing'
-        ? activity.status
-        : 'idle'
-    return {
-      slug: b.slug,
-      name: b.name,
-      role: b.role,
-      description: role?.description ?? '',
-      avatarSrc: `/avatars/${b.slug}.png`,
-      initials: initialsOf(b.name),
-      position: AGENT_POSITIONS[b.slug] ?? { x: 50, y: 50 },
-      status: status as 'idle' | 'building' | 'reviewing',
-      currentTicker: activity.current_ticker ?? null,
-      pending: false,
-    }
-  })
+    lookup.set(
+      b.slug,
+      seatFor(b.slug, b.name, b.role, role?.description ?? '', perAgent),
+    )
+  }
 
-  const hireAgents: AgentOnFloor[] = (hires ?? []).map((h, i) => ({
+  const pm = lookup.get('portfolio-manager') ?? null
+  const gamingPod = {
+    analyst: lookup.get('analyst-gaming')!,
+    associate: lookup.get('associate-gaming')!,
+  }
+  const softwarePod = {
+    analyst: lookup.get('analyst-software')!,
+    associate: lookup.get('associate-software')!,
+  }
+
+  const hireSeats: AgentSeat[] = (hires ?? []).map((h) => ({
     slug: `${h.status as string}-${h.id}`,
     name: h.role_name as string,
     role: h.role_name as string,
     description: h.description as string,
-    avatarSrc: avatarPathFor(h.role_slug as string),
-    initials: initialsOf(h.role_name as string),
-    position: EXPANSION_POSITIONS[i % EXPANSION_POSITIONS.length],
     status: 'idle',
     currentTicker: null,
     pending: h.status !== 'active',
   }))
 
-  const agents: AgentOnFloor[] = [...baseAgents, ...hireAgents]
-
   return (
-    <div className="mx-auto max-w-5xl px-6 py-12">
+    <div className="mx-auto max-w-4xl px-6 py-16">
       <p className="text-[11px] uppercase tracking-[0.35em] text-ink-mute">
         Case study
       </p>
       <h2 className="mt-3 font-display text-5xl font-semibold tracking-tight">
-        The floor
+        The firm
       </h2>
-      <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-ink-mute">
+      <div className="mt-6 max-w-2xl space-y-3 text-[17px] leading-relaxed text-ink-mute">
         <p>
           Armstrong Equities is, under the hood, an AI-operated research firm.
-          Five Claude agents at five desks: a Portfolio Manager who is the only
-          seat with publish or kill authority, two coverage pods (Gaming,
+          Five Claude agents at five seats: a Portfolio Manager with sole
+          publish or kill authority, and two coverage pods (Gaming and
           Software), each with an Analyst building theses and an Associate
-          trying to break them. They run on a schedule on GitHub Actions and
-          push their PM-approved notes to this website as drafts. Truman gates
-          every publish.
+          trying to break them. They run on a weekday schedule on GitHub
+          Actions and push their PM-approved notes to this site as drafts.
+          Truman gates every publish.
         </p>
         <p>
-          Click any seat to see what they are working on, their deep job
-          description, and recent activity. Hit{' '}
-          <strong className="text-ink">New Hire</strong> to add a role to the
-          firm.
+          Click any seat to read its job description and current activity. Use{' '}
+          <strong className="text-ink">New Hire</strong> to add a role.
         </p>
       </div>
 
-      <div className="mt-12">
-        <AgentsFloor agents={agents} />
+      <div className="mt-16">
+        <AgentsBoard
+          pm={pm}
+          gamingPod={gamingPod}
+          softwarePod={softwarePod}
+          hires={hireSeats}
+        />
       </div>
     </div>
   )
