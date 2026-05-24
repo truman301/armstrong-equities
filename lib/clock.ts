@@ -53,9 +53,40 @@ function timeInZone(d: Date, timeZone: string): string {
   }).format(d)
 }
 
+// US equity market full-day holidays. Half-day early closes (e.g., the day
+// after Thanksgiving, Christmas Eve) are not modeled here; they read as
+// 'open' until 1pm ET and we accept that small misclassification.
+// Update annually around year-end.
+const US_MARKET_HOLIDAYS: Set<string> = new Set([
+  // 2026
+  '2026-01-01', // New Year's Day
+  '2026-01-19', // MLK Day
+  '2026-02-16', // Presidents' Day
+  '2026-04-03', // Good Friday
+  '2026-05-25', // Memorial Day
+  '2026-06-19', // Juneteenth
+  '2026-07-03', // Independence Day observed (Jul 4 is Saturday)
+  '2026-09-07', // Labor Day
+  '2026-11-26', // Thanksgiving
+  '2026-12-25', // Christmas
+  // 2027 (so we don't go stale right at year end)
+  '2027-01-01',
+  '2027-01-18',
+  '2027-02-15',
+  '2027-03-26', // Good Friday 2027
+  '2027-05-31',
+  '2027-06-18', // Juneteenth observed (Jun 19 is Saturday)
+  '2027-07-05', // Independence Day observed (Jul 4 is Sunday)
+  '2027-09-06',
+  '2027-11-25',
+  '2027-12-24', // Christmas observed (Dec 25 is Saturday)
+])
+
 export function marketStateAt(d: Date): MarketState {
   const weekday = weekdayInZone(d, 'America/New_York')
   if (weekday === 'Saturday' || weekday === 'Sunday') return 'closed'
+  const easternDate = isoDateInZone(d, 'America/New_York')
+  if (US_MARKET_HOLIDAYS.has(easternDate)) return 'closed'
   const [hh, mm] = timeInZone(d, 'America/New_York').split(':').map(Number)
   const minutes = hh * 60 + mm
   if (minutes >= 9 * 60 + 30 && minutes < 16 * 60) return 'open'
